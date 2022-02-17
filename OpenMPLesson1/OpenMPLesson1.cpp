@@ -1,4 +1,4 @@
-#define N 45000
+#define N 45
 #define M N
 #define NUM_ATTEMPTS 15
 #define PROC_MAX 6
@@ -17,9 +17,12 @@ double block_parallel_for(int threads, long int* a, long int* b, long int* c) {
     double time_start = omp_get_wtime();
     omp_set_num_threads(threads);
 
-    #pragma omp parallel for
     for (int i = 0; i < M; i++) {
         c[i] = 0;
+    }
+
+    #pragma omp parallel for
+    for (int i = 0; i < M; i++) {
         for (int j = 0; j < N; j++) {
             c[i] = c[i] + a[i*N+j]*b[j] ;
         }
@@ -33,11 +36,14 @@ double block_parallel_manual(int threads, long int* a, long int* b, long int* c)
     int n_on_thread = M / threads;
     omp_set_num_threads(threads);
 
+    for (int i = 0; i < M; i++) {
+        c[i] = 0;
+    }
+
     #pragma omp parallel
     {
         int current_thread = omp_get_thread_num();
         for (int i = current_thread*n_on_thread; i < ((current_thread+1) * n_on_thread); i++) {
-            c[i] = 0;
             for (int j = 0; j < N; j++) {
                 c[i] = c[i] + a[i * N + j] * b[j];
             }
