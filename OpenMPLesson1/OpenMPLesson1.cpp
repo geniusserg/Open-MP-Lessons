@@ -1,4 +1,9 @@
-#define N 1000
+// Lab 1
+// Danilov Sergey
+// Matrix and vector mult
+
+
+#define N 45000 // 45000x45000 matrix
 #define M N
 #define NUM_ATTEMPTS 15
 #define PROC_MAX 6
@@ -21,12 +26,13 @@ double block_parallel_for(int threads, long int* a, long int* b, long int* c) {
         c[i] = 0;
     }
 
-    #pragma omp parallel for schedule(static, 4)
+    #pragma omp parallel for
     for (int i = 0; i < M; i++) {
         for (int j = 0; j < N; j++) {
             c[i] = c[i] + a[i*N+j]*b[j] ;
         }
     }
+
     return omp_get_wtime() - time_start;
 }
 
@@ -40,7 +46,7 @@ double block_parallel_manual(int threads, long int* a, long int* b, long int* c)
         c[i] = 0;
     }
 
-    #pragma omp parallel
+    #pragma omp parallel 
     {
         int current_thread = omp_get_thread_num();
         for (int i = current_thread*n_on_thread; i < ((current_thread+1) * n_on_thread); i++) {
@@ -58,6 +64,7 @@ double block_parallel_manual(int threads, long int* a, long int* b, long int* c)
             c[i] = c[i] + a[i * N + j] * b[j];
         }
     }
+
     return omp_get_wtime() - time_start;
 }
 
@@ -94,45 +101,40 @@ void print_c_vector() {
 }
 
 void collect_and_print_statistic(double (*method)(int, long int*, long int*, long int*)) {
-    // collect time in array
     double array[PROC_MAX];
     for (int i = 0; i < PROC_MAX; i++) {
         array[i] = 0;
     }
 
-    // collect several times
+    // collect several times and get average
     for (int attempt = 0; attempt < NUM_ATTEMPTS; attempt++) {
         for (int i = 0; i < PROC_MAX; i++) {
             array[i] += method(pow(2, i), a, b, c);
-            for (int i = 0; i < M; i++) {
-                c[i] = 0;
-            }
         }
     }
-
-    //get average from meaurements
     for (int i = 0; i < PROC_MAX; i++) {
         array[i] = array[i] / NUM_ATTEMPTS;
     }
+
     print_result(array, PROC_MAX);
 }
 
 int main()
 {
+    //file for report
     std::ofstream file_result;
     file_result.open("file.txt");
     file_result.close();
 
+    //define arrays
     for (int i = 0; i < M; i++) {
         for (int j = 0; j < N; j++) {
             a[i*N+j] = 10000;
         }
     }
-
     for (int i = 0; i < M; i++) {
         c[i] = 0;
     }
-
     for (int i = 0; i < N; i++) {
         b[i] = 2222;
     }
