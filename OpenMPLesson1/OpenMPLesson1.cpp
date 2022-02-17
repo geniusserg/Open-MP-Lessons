@@ -1,4 +1,4 @@
-#define N 45
+#define N 1000
 #define M N
 #define NUM_ATTEMPTS 15
 #define PROC_MAX 6
@@ -21,7 +21,7 @@ double block_parallel_for(int threads, long int* a, long int* b, long int* c) {
         c[i] = 0;
     }
 
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(static, 4)
     for (int i = 0; i < M; i++) {
         for (int j = 0; j < N; j++) {
             c[i] = c[i] + a[i*N+j]*b[j] ;
